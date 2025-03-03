@@ -1,14 +1,20 @@
 
 import React, { useState, useRef } from 'react';
 import { Upload as UploadIcon, X, Film, FileVideo } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import Button from './Button';
 import { cn } from '@/lib/utils';
+import { ProcessingService } from '@/services/ProcessingService';
+import { useToast } from '@/components/ui/use-toast';
 
 const Upload: React.FC = () => {
   const [isDragging, setIsDragging] = useState(false);
   const [file, setFile] = useState<File | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const navigate = useNavigate();
+  const { toast } = useToast();
   
   const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
@@ -27,13 +33,30 @@ const Upload: React.FC = () => {
     const files = e.dataTransfer.files;
     if (files.length > 0 && files[0].type.startsWith('video/')) {
       setFile(files[0]);
+    } else {
+      toast({
+        title: "Invalid file",
+        description: "Please upload a video file.",
+        variant: "destructive",
+        duration: 3000,
+      });
     }
   };
   
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (files && files.length > 0) {
-      setFile(files[0]);
+      const selectedFile = files[0];
+      if (selectedFile.type.startsWith('video/')) {
+        setFile(selectedFile);
+      } else {
+        toast({
+          title: "Invalid file",
+          description: "Please upload a video file.",
+          variant: "destructive",
+          duration: 3000,
+        });
+      }
     }
   };
   
@@ -48,16 +71,61 @@ const Upload: React.FC = () => {
     }
   };
   
-  const handleProcess = () => {
+  const simulateUploadProgress = () => {
+    let progress = 0;
+    const interval = setInterval(() => {
+      progress += Math.random() * 15;
+      if (progress >= 100) {
+        progress = 100;
+        clearInterval(interval);
+      }
+      setUploadProgress(Math.min(progress, 100));
+    }, 500);
+    
+    return interval;
+  };
+  
+  const handleProcess = async () => {
     if (!file) return;
     
     setIsProcessing(true);
+    setUploadProgress(0);
     
-    // This is just a simulation - in a real app, you'd send the file to your backend
-    setTimeout(() => {
+    // Simulate file upload with progress
+    const progressInterval = simulateUploadProgress();
+    
+    try {
+      // Process the video
+      const jobId = await ProcessingService.processVideo(file);
+      
+      // Clear the upload progress simulation
+      clearInterval(progressInterval);
+      setUploadProgress(100);
+      
+      // Show success message
+      toast({
+        title: "Upload successful",
+        description: "Your video has been uploaded and is being processed.",
+        duration: 3000,
+      });
+      
+      // Redirect to results page
+      setTimeout(() => {
+        navigate(`/results/${jobId}`);
+      }, 1000);
+    } catch (error) {
+      clearInterval(progressInterval);
       setIsProcessing(false);
-      // Would normally redirect to results page or show results here
-    }, 3000);
+      
+      toast({
+        title: "Processing failed",
+        description: "There was an error processing your video. Please try again.",
+        variant: "destructive",
+        duration: 3000,
+      });
+      
+      console.error("Error processing video:", error);
+    }
   };
   
   return (
@@ -125,6 +193,7 @@ const Upload: React.FC = () => {
                 <button 
                   className="text-muted-foreground hover:text-foreground transition-colors"
                   onClick={handleClearFile}
+                  disabled={isProcessing}
                 >
                   <X size={20} />
                 </button>
@@ -156,10 +225,13 @@ const Upload: React.FC = () => {
               {isProcessing && (
                 <div className="mt-6">
                   <div className="h-2 bg-secondary rounded-full overflow-hidden">
-                    <div className="h-full bg-primary rounded-full w-1/2 animate-pulse"></div>
+                    <div 
+                      className="h-full bg-primary rounded-full transition-all duration-300"
+                      style={{ width: `${uploadProgress}%` }}
+                    ></div>
                   </div>
                   <p className="text-sm text-center mt-2 text-muted-foreground">
-                    Analyzing video content...
+                    {uploadProgress < 100 ? "Uploading video..." : "Preparing for processing..."}
                   </p>
                 </div>
               )}
