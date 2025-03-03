@@ -14,7 +14,7 @@ const Footer: React.FC = () => {
           <div className="md:col-span-1">
             <div className="mb-4">
               <a href="/" className="text-2xl font-bold">
-                CleverClip
+                DBMS Clip
               </a>
             </div>
             <p className="text-muted-foreground mb-6 text-sm">
@@ -78,13 +78,13 @@ const Footer: React.FC = () => {
         
         <div className="mt-16 pt-8 border-t border-border flex flex-col md:flex-row justify-between items-center">
           <p className="text-sm text-muted-foreground">
-            &copy; {new Date().getFullYear()} CleverClip. All rights reserved.
+            &copy; {new Date().getFullYear()} DBMS Clip. All rights reserved.
           </p>
           
           <div className="mt-4 md:mt-0 flex items-center">
-            <a href="mailto:info@cleverclip.app" className="text-sm flex items-center text-muted-foreground hover:text-foreground transition-colors">
+            <a href="mailto:info@dbmsclip.app" className="text-sm flex items-center text-muted-foreground hover:text-foreground transition-colors">
               <Mail size={16} className="mr-2" />
-              <span>info@cleverclip.app</span>
+              <span>info@dbmsclip.app</span>
             </a>
           </div>
         </div>
