@@ -10,13 +10,30 @@ interface ProcessingResult {
   summary: string;
 }
 
+// Defining parameters for LLM requests
+interface LLMRequestParams {
+  text: string;
+  maxLength?: number;
+  temperature?: number;
+}
+
+// API endpoints and configuration
+const API_CONFIG = {
+  TRANSCRIPTION_API: "https://api.example.com/transcribe", // Placeholder for actual API
+  FRAME_ANALYSIS_API: "https://api.example.com/analyze-frames", // Placeholder for actual API
+  SUMMARY_API: "https://api.example.com/summarize", // Placeholder for actual API
+  API_KEY: "sample_api_key" // In real implementation, this would be stored securely
+};
+
 export class ProcessingService {
   static async processVideo(file: File): Promise<string> {
-    // This is a mock implementation that simulates sending the video to a backend
     console.log(`Processing video: ${file.name}`);
     
-    // Simulate network request
+    // Simulate uploading to backend and creating a processing job
     return new Promise((resolve) => {
+      // Capture video metadata
+      console.log(`Extracting metadata from video: ${file.size} bytes`);
+      
       // Simulate a processing delay and return a job ID
       setTimeout(() => {
         const jobId = `job_${Math.random().toString(36).substring(2, 11)}`;
@@ -39,35 +56,184 @@ export class ProcessingService {
   }
   
   private static simulateProcessing(jobId: string, file: File) {
-    // Simulate backend processing
-    const processingTime = 5000 + Math.random() * 5000; // 5-10 seconds
+    // Simulate backend processing steps
+    console.log(`Starting processing pipeline for job: ${jobId}`);
     
-    setTimeout(() => {
+    const processingSteps = [
+      this.simulateVideoFrameExtraction,
+      this.simulateTranscriptionService,
+      this.simulateKeyFrameAnalysis,
+      this.simulateSummaryGeneration
+    ];
+
+    // Total processing time: 8-15 seconds
+    const totalProcessingTime = 8000 + Math.random() * 7000;
+    const stepsDelay = totalProcessingTime / processingSteps.length;
+    
+    let currentResult: any = {
+      videoName: file.name,
+      duration: this.formatDuration(Math.floor(30 + Math.random() * 600)), // 30s - 10min
+    };
+    
+    // Execute each processing step with a delay to simulate async processing
+    processingSteps.reduce((promise, step, index) => {
+      return promise.then(() => {
+        // Update job status with current step
+        const processingStepNames = [
+          "Extracting video frames",
+          "Transcribing audio",
+          "Analyzing key moments",
+          "Generating summary"
+        ];
+        
+        const jobData = JSON.parse(localStorage.getItem(`job_${jobId}`) || "{}");
+        localStorage.setItem(`job_${jobId}`, JSON.stringify({
+          ...jobData,
+          currentStep: processingStepNames[index],
+          progress: Math.min(25 * (index + 1), 95) // Progress percentage (max 95% until complete)
+        }));
+        
+        return new Promise((resolve) => {
+          setTimeout(() => {
+            // Execute current step and merge results
+            const stepResult = step.call(this, currentResult);
+            currentResult = { ...currentResult, ...stepResult };
+            resolve(null);
+          }, stepsDelay);
+        });
+      });
+    }, Promise.resolve())
+    .then(() => {
+      // All steps completed, update job status
       console.log(`Completed processing for job: ${jobId}`);
-      
-      // Generate mock result
-      const result: ProcessingResult = {
-        videoName: file.name,
-        duration: this.formatDuration(Math.floor(30 + Math.random() * 600)), // 30s - 10min
-        keyFrames: this.generateMockKeyFrames(),
-        transcription: this.generateMockTranscription(),
-        summary: this.generateMockSummary()
-      };
       
       // Update job status in localStorage
       localStorage.setItem(`job_${jobId}`, JSON.stringify({
         fileName: file.name,
         fileSize: file.size,
-        submittedAt: new Date(Date.now() - processingTime).toISOString(),
+        submittedAt: new Date(Date.now() - totalProcessingTime).toISOString(),
         completedAt: new Date().toISOString(),
         status: 'completed',
-        result
+        progress: 100,
+        result: currentResult
       }));
-    }, processingTime);
+    });
+  }
+  
+  // Simulate video frame extraction
+  private static simulateVideoFrameExtraction(currentData: any) {
+    console.log("Extracting frames from video");
+    // In a real implementation, this would call a video processing API
+    // Simulate sending a chunk of video to the API
+    const mockApiRequest = {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${API_CONFIG.API_KEY}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        videoUrl: "https://example.com/temp/video.mp4",
+        frameRate: 1, // Extract 1 frame per second
+        quality: "medium"
+      })
+    };
+    
+    console.log("Frame extraction API request", mockApiRequest);
+    
+    // No new data to return at this step
+    return {};
+  }
+  
+  // Simulate transcription service (e.g., Whisper API)
+  private static simulateTranscriptionService(currentData: any) {
+    console.log("Transcribing audio from video");
+    
+    // Simulate sending audio to a transcription API
+    const mockApiRequest = {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${API_CONFIG.API_KEY}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        audioUrl: "https://example.com/temp/audio.mp3",
+        language: "en",
+        model: "whisper-large-v3"
+      })
+    };
+    
+    console.log("Transcription API request", mockApiRequest);
+    
+    // Generate mock transcription
+    return {
+      transcription: this.generateMockTranscription()
+    };
+  }
+  
+  // Simulate key frame analysis with computer vision APIs
+  private static simulateKeyFrameAnalysis(currentData: any) {
+    console.log("Analyzing key frames from video");
+    
+    // Simulate sending frames to a computer vision API
+    const mockApiRequest = {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${API_CONFIG.API_KEY}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        frames: ["frame1.jpg", "frame2.jpg", "frame3.jpg"], // References to extracted frames
+        analysisTypes: ["object_detection", "scene_classification", "sentiment_analysis"]
+      })
+    };
+    
+    console.log("Frame analysis API request", mockApiRequest);
+    
+    // Generate mock key frames data
+    return {
+      keyFrames: this.generateMockKeyFrames()
+    };
+  }
+  
+  // Simulate summary generation with LLM
+  private static simulateSummaryGeneration(currentData: any) {
+    console.log("Generating summary using LLM");
+    
+    // Simulate LLM API request with transcription and frame analysis
+    const llmParams: LLMRequestParams = {
+      text: `Generate a summary for this video based on the transcription and key frames:
+            Transcription: ${currentData.transcription || ""}
+            Key Frames: ${JSON.stringify(currentData.keyFrames || [])}`,
+      maxLength: 500,
+      temperature: 0.7
+    };
+    
+    const mockLlmRequest = {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${API_CONFIG.API_KEY}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        model: "gpt-4o",
+        prompt: llmParams.text,
+        max_tokens: llmParams.maxLength,
+        temperature: llmParams.temperature
+      })
+    };
+    
+    console.log("LLM API request for summary", mockLlmRequest);
+    
+    // Generate mock summary
+    return {
+      summary: this.generateMockSummary()
+    };
   }
   
   static async getJobStatus(jobId: string): Promise<{
     status: 'processing' | 'completed' | 'failed' | 'not_found';
+    currentStep?: string;
+    progress?: number;
     result?: ProcessingResult;
   }> {
     // Simulate API call to get job status
@@ -84,12 +250,15 @@ export class ProcessingService {
         
         resolve({
           status: job.status,
+          currentStep: job.currentStep,
+          progress: job.progress,
           result: job.result
         });
       }, 300);
     });
   }
   
+  // Helper methods for formatting and generating mock data
   private static formatDuration(seconds: number): string {
     const minutes = Math.floor(seconds / 60);
     const remainingSeconds = seconds % 60;

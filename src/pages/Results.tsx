@@ -1,10 +1,9 @@
-
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ProcessingService } from '@/services/ProcessingService';
 import Layout from '@/components/Layout';
 import Button from '@/components/Button';
-import { ArrowLeft, Clock, FileText, Film, Play } from 'lucide-react';
+import { ArrowLeft, Clock, FileText, Film, Play, Download } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 
 const Results: React.FC = () => {
@@ -14,6 +13,8 @@ const Results: React.FC = () => {
   
   const [loading, setLoading] = useState(true);
   const [processing, setProcessing] = useState(false);
+  const [currentStep, setCurrentStep] = useState<string | null>(null);
+  const [progress, setProgress] = useState<number>(0);
   const [result, setResult] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
   const [selectedTab, setSelectedTab] = useState<'summary' | 'transcript' | 'keyframes'>('summary');
@@ -43,6 +44,8 @@ const Results: React.FC = () => {
           // Still processing
           setProcessing(true);
           setLoading(false);
+          setCurrentStep(status.currentStep || "Processing your video");
+          setProgress(status.progress || 0);
           
           // Check again after 2 seconds
           setTimeout(checkStatus, 2000);
@@ -112,16 +115,34 @@ const Results: React.FC = () => {
               </div>
               
               <h2 className="heading-lg mb-4">Processing Your Video</h2>
-              <p className="text-muted-foreground mb-8">
+              <p className="text-muted-foreground mb-2">
                 Our AI is currently analyzing your video to create a comprehensive summary.
-                This process may take a few minutes depending on the video length and complexity.
+              </p>
+              <p className="text-primary font-medium mb-8">
+                {currentStep}
               </p>
               
               <div className="h-2 bg-secondary rounded-full overflow-hidden mb-4">
-                <div className="h-full bg-primary rounded-full w-2/3 animate-pulse"></div>
+                <div 
+                  className="h-full bg-primary rounded-full transition-all duration-300" 
+                  style={{ width: `${progress}%` }}
+                ></div>
+              </div>
+              <p className="text-sm text-center text-muted-foreground mb-8">
+                {progress}% complete
+              </p>
+              
+              <div className="bg-secondary/30 p-4 rounded-lg max-w-md mx-auto text-left">
+                <p className="text-sm font-medium mb-1">Processing steps:</p>
+                <ol className="text-sm text-muted-foreground space-y-1 list-decimal list-inside">
+                  <li className={progress >= 25 ? 'text-primary' : ''}>Extracting video frames</li>
+                  <li className={progress >= 50 ? 'text-primary' : ''}>Transcribing audio</li>
+                  <li className={progress >= 75 ? 'text-primary' : ''}>Analyzing key moments</li>
+                  <li className={progress >= 95 ? 'text-primary' : ''}>Generating summary</li>
+                </ol>
               </div>
               
-              <p className="text-sm text-center text-muted-foreground">
+              <p className="text-sm text-center mt-8 text-muted-foreground">
                 Please don't close this page. You'll be automatically redirected when processing is complete.
               </p>
             </div>
