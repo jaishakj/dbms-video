@@ -32,7 +32,7 @@ const Header: React.FC = () => {
       <div className="max-w-7xl mx-auto flex items-center justify-between">
         <div className="flex items-center">
           <a href="/" className="text-2xl font-bold text-foreground">
-            DBMS Clip
+            Prakasham
           </a>
         </div>
         

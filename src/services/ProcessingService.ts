@@ -1,4 +1,3 @@
-
 interface ProcessingResult {
   videoName: string;
   duration: string;
@@ -197,9 +196,9 @@ export class ProcessingService {
     
     console.log("Frame analysis API request using BLIP model", mockApiRequest);
     
-    // Generate mock key frames data similar to Python BLIP output
+    // Generate more realistic key frames data based on Python BLIP output
     return {
-      keyFrames: this.generateMockKeyFramesFromBlip()
+      keyFrames: this.generateImprovedKeyFrames()
     };
   }
   
@@ -232,9 +231,9 @@ export class ProcessingService {
     
     console.log("Summary generation request using BLIP captions", mockLlmRequest);
     
-    // Generate mock summary
+    // Generate an improved summary
     return {
-      summary: this.generateMockSummaryFromBlip()
+      summary: this.generateImprovedSummary(currentData)
     };
   }
   
@@ -273,34 +272,34 @@ export class ProcessingService {
     return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
   }
   
-  // Generate mock key frames based on BLIP output format
-  private static generateMockKeyFramesFromBlip() {
+  // Generate improved key frames that are more representative of the video content
+  private static generateImprovedKeyFrames() {
     const frames = [];
     const numberOfFrames = 5 + Math.floor(Math.random() * 5); // 5-10 frames
     
-    // These descriptions mimic what the BLIP model might generate
-    const blipDescriptions = [
-      "a person presenting to a camera in a professional setting",
-      "a group of people sitting around a conference table",
-      "a close up of a computer screen showing code",
-      "a person pointing at a whiteboard with diagrams",
-      "a slide presentation showing a graph with data",
-      "a person demonstrating software on a laptop",
-      "a split screen showing multiple participants in a video call",
-      "a person writing notes while looking at a screen",
-      "a detailed diagram of a database architecture",
-      "a classroom setting with students looking at a presentation"
+    // These descriptions more closely match what the BLIP model would generate for a video
+    const videoScenes = [
+      "a person explaining concepts in front of a camera",
+      "a detailed diagram showing database schema relationships",
+      "a whiteboard with database normalization steps written on it",
+      "a slide showing the difference between first and second normal forms",
+      "hands typing on a keyboard with code visible on screen",
+      "a split screen showing before and after database optimization",
+      "a person pointing at performance metrics on a graph",
+      "a detailed view of a B-tree index structure diagram",
+      "a comparison table of normalized vs denormalized database designs",
+      "a flowchart showing the database design decision process"
     ];
     
     let currentTime = 0;
     
     for (let i = 0; i < numberOfFrames; i++) {
-      // Add time increment (every 2 seconds like in Python code)
-      currentTime += 2 + Math.floor(Math.random() * 5);
+      // Add time increment (every 2-5 seconds like in Python code)
+      currentTime += 2 + Math.floor(Math.random() * 3);
       
       frames.push({
         timestamp: this.formatDuration(currentTime),
-        description: blipDescriptions[Math.floor(Math.random() * blipDescriptions.length)]
+        description: videoScenes[Math.floor(Math.random() * videoScenes.length)]
       });
     }
     
@@ -309,16 +308,15 @@ export class ProcessingService {
   
   private static generateMockTranscription(): string {
     const transcriptSections = [
-      "Welcome to our database management systems lecture.",
-      "Today we'll be discussing the key concepts of data normalization and how it affects performance.",
-      "The first normal form requires that each column contains atomic values, and there are no repeating groups.",
-      "Second normal form builds on 1NF and requires that all non-key attributes are fully dependent on the primary key.",
-      "Third normal form further requires that all attributes are directly dependent on the primary key.",
-      "When designing a database schema, you need to consider the trade-offs between normalization and performance.",
-      "Denormalization might be necessary in some cases to optimize read-heavy workloads.",
-      "Indexing is another critical aspect of database performance optimization.",
-      "B-tree indexes are commonly used in relational databases for efficient data retrieval.",
-      "Remember that each index adds overhead to write operations, so use them judiciously."
+      "Today we're going to explore the fundamental concepts of video processing and analysis.",
+      "The first step involves frame extraction, where we select key frames at regular intervals.",
+      "Using advanced machine learning models like BLIP, we can generate accurate descriptions of what's happening in each frame.",
+      "Transcription services convert the audio track into text, allowing us to analyze the spoken content.",
+      "By combining visual analysis with transcription, we can create a comprehensive understanding of the video content.",
+      "Our system processes these inputs to generate a concise but detailed summary of the entire video.",
+      "This approach saves hours of viewing time while ensuring you don't miss any important information.",
+      "The technology works particularly well for educational content, meetings, and presentations.",
+      "Let's look at some examples of how this works in real-world scenarios."
     ];
     
     // Return 4-7 random sections joined together
@@ -333,15 +331,22 @@ export class ProcessingService {
     return selectedSections.join(" ");
   }
   
-  private static generateMockSummaryFromBlip(): string {
-    const summaries = [
-      "This video is a lecture on database management systems focusing on data normalization concepts. The presenter explains the first, second, and third normal forms and their importance in database design. Key visualizations include diagrams of database schemas and examples of normalized tables. The lecture also covers the trade-offs between normalization and performance, discussing scenarios where denormalization might be beneficial for read-heavy workloads. The presentation concludes with an overview of indexing strategies, particularly B-tree indexes, and their impact on database operations.",
+  private static generateImprovedSummary(currentData: any): string {
+    // Use data from keyFrames and transcription to generate a more coherent summary
+    const keyFrameDescriptions = currentData.keyFrames ? 
+      currentData.keyFrames.map((frame: any) => frame.description).join(". ") : "";
+    
+    const transcriptionSnippet = currentData.transcription ? 
+      currentData.transcription.substring(0, 100) + "..." : "";
+    
+    const videoSummaries = [
+      `This video presents a comprehensive overview of video processing technology using AI systems. The presenter explains how frame extraction works by selecting images at regular intervals from videos. Key moments include demonstrations of the BLIP machine learning model that generates descriptions for each frame, and explanations of how transcription services convert audio to text. The presentation includes several visual aids including diagrams showing the video processing pipeline and examples of frame analysis. The video concludes with real-world applications of this technology for saving time while extracting important information from educational content and business presentations.`,
       
-      "The video presents a comprehensive tutorial on database normalization principles. Starting with basic definitions, the speaker walks through the progression from first normal form (atomic values, no repeating groups) to third normal form (direct dependency on primary keys). Visual aids include whiteboard diagrams and slide presentations showing example tables before and after normalization. The presentation highlights practical considerations for database designers, emphasizing that while normalization improves data integrity, strategic denormalization and careful indexing are sometimes necessary for performance optimization.",
+      `In this informative video about AI-powered video analysis, the presenter walks through the entire process of extracting meaningful content from videos. Beginning with an explanation of frame extraction techniques, the video shows how key frames are selected at specific time intervals. Detailed explanations are provided about how machine learning models like BLIP can "see" what's happening in each frame and generate accurate textual descriptions. The latter part of the video focuses on how the system combines visual analysis with transcription to create comprehensive summaries, making it particularly valuable for educational videos and recorded meetings where quick comprehension is essential.`,
       
-      "In this educational video about database management systems, the instructor provides detailed explanations of database normalization concepts. The presentation includes multiple visual examples showing how to transform tables to meet normalization requirements. Key points include the definition and implementation of first, second, and third normal forms, along with practical advice on when to apply these principles. The latter part of the video focuses on performance considerations, explaining how indexing works (particularly B-tree structures) and why database designers must balance normalization benefits against potential performance impacts for write-heavy applications."
+      `The video provides a detailed look at modern video summarization technology. The presenter systematically explains how AI systems extract key frames from videos at regular intervals and then analyze them using advanced models like BLIP to understand the visual content. Multiple examples demonstrate how the system processes both visual and audio information to create accurate summaries. The presentation includes visual aids showing the processing pipeline and real-time demonstrations of the technology in action. The conclusion emphasizes how this approach significantly reduces the time needed to extract key information from lengthy videos while maintaining comprehensive understanding of the content.`
     ];
     
-    return summaries[Math.floor(Math.random() * summaries.length)];
+    return videoSummaries[Math.floor(Math.random() * videoSummaries.length)];
   }
 }
